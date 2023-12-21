@@ -287,6 +287,57 @@ def change_student_marks():
 
     return jsonify(success=False, message="Не удалось изменить оценку")
 
+# Обработчик запроса на изменение группы студента
+@app.route('/admin/change_student_group', methods=['POST'])
+def change_student_group():
+    student_login = request.form.get('student_login')
+    new_group = request.form.get('new_group')
+
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                sql_query = """
+                    UPDATE student
+                    SET id_group = (SELECT id_group FROM "group" WHERE "name" = %s)
+                    WHERE id_person = (SELECT id_person FROM person WHERE login = %s);
+                """
+                cursor.execute(sql_query, (new_group, student_login))
+                connection.commit()
+
+                return jsonify(success=True, message="Группа студента успешно изменена")
+        except Exception as error:
+            print("Ошибка при изменении группы студента", error)
+        finally:
+            connection.close()
+    return jsonify(success=False, message="Не удалось изменить группу студента")
+
+# Обработчик запроса на изменение департамента преподавателя
+@app.route('/admin/change_teacher_department', methods=['POST'])
+def change_teacher_department():
+    teacher_login = request.form.get('teacher_login')
+    new_department = request.form.get('new_department')
+
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                sql_query = """
+                    UPDATE teacher
+                    SET id_department = (SELECT id_department FROM department WHERE "name" = %s)
+                    WHERE id_person = (SELECT id_person FROM person WHERE login = %s);
+                """
+                cursor.execute(sql_query, (new_department, teacher_login))
+                connection.commit()
+
+                return jsonify(success=True, message="Департамент преподавателя успешно изменен")
+        except Exception as error:
+            print("Ошибка при изменении департамента преподавателя", error)
+        finally:
+            connection.close()
+
+    return jsonify(success=False, message="Не удалось изменить департамент преподавателя")
+
 def verify_password(input_password, hashed_password):
     return bcrypt.verify(input_password, hashed_password)
 
@@ -294,6 +345,10 @@ def verify_password(input_password, hashed_password):
 def login_in():
     login = request.form.get('login')
     password = request.form.get('password')
+
+    if login == 'admin' and password == 'admin':
+        # Перенаправляем на страницу администратора
+        return redirect(url_for('show_admin_form'))
 
     user_data = get_user_data(login)
 
@@ -345,6 +400,10 @@ def show_student_form():
         return redirect(url_for('show_index_form'))
 
     return render_template("student.html")
+
+@app.route('/admin')
+def show_admin_form():
+    return render_template("admin.html")
 @app.route('/logout')
 def logout():
     session.clear()
