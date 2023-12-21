@@ -3,6 +3,7 @@ CREATE TABLE public.person (
 	"name" varchar NOT NULL,
 	surname varchar NOT NULL,
 	sex varchar NOT NULL,
+	login varchar NOT NULL,
 	password varchar NOT NULL,
 	passport_number int4 NOT NULL,
 	CONSTRAINT person_pk PRIMARY KEY (id_person)
