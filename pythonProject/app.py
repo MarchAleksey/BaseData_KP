@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import psycopg2
 from passlib.hash import bcrypt
+from flask import jsonify
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -223,6 +224,69 @@ def get_student_marks(login):
         finally:
             connection.close()
     return []
+@app.route('/teacher/change_marks', methods=['POST'])
+
+@app.route('/teacher/change_marks', methods=['POST'])
+def change_student_marks():
+    if 'user_data' in session:
+        # Получаем данные пользователя из сессии
+        user_data = session['user_data']
+        login = user_data['login']
+
+        # Проверяем, что пользователь - учитель
+        if get_user_role(login) == 'teacher':
+            # Получаем данные из формы
+            student_name = request.form.get('student_name')
+            student_surname = request.form.get('student_surname')
+            group_name = request.form.get('group_name')
+            subject_name = request.form.get('subject_name')
+            new_value = request.form.get('new_value')
+
+            connection = connect_to_db()
+            if connection:
+                try:
+                    with connection.cursor() as cursor:
+                        # Получаем id студента, id предмета и id учителя
+                        sql_student_id = """
+                            SELECT student.id_student
+                            FROM person
+                            JOIN student ON person.id_person = student.id_person
+                            JOIN "group" ON student.id_group = "group".id_group
+                            WHERE person.name = %s AND person.surname = %s AND "group"."name" = %s;
+                        """
+                        cursor.execute(sql_student_id, (student_name, student_surname, group_name))
+                        student_id = cursor.fetchone()[0]
+
+                        sql_subject_id = "SELECT id_subject FROM subject WHERE name = %s;"
+                        cursor.execute(sql_subject_id, (subject_name,))
+                        subject_id = cursor.fetchone()[0]
+
+                        sql_teacher_id = "SELECT id_teacher FROM teacher WHERE id_person = (SELECT id_person FROM person WHERE login = %s);"
+                        cursor.execute(sql_teacher_id, (login,))
+                        teacher_id = cursor.fetchone()[0]
+
+                        # Проверяем, что учитель ведет предмет, для которого изменяются оценки
+                        sql_check_teacher_subject = "SELECT id_subject FROM subject WHERE id_teacher = %s;"
+                        cursor.execute(sql_check_teacher_subject, (teacher_id,))
+                        teacher_subjects = cursor.fetchall()
+                        teacher_subject_ids = [subj[0] for subj in teacher_subjects]
+
+                        if subject_id in teacher_subject_ids:
+                            # Обновляем оценку
+                            sql_update_mark = "UPDATE mark SET value = %s WHERE id_student = %s AND id_subject = %s;"
+                            cursor.execute(sql_update_mark, (new_value, student_id, subject_id))
+
+                            connection.commit()
+                            return jsonify(success=True, message="Оценка успешно изменена")
+                        else:
+                            return jsonify(success=False, message="Учитель не ведет предмет с таким названием")
+                except Exception as error:
+                    print("Ошибка при изменении оценки", error)
+                finally:
+                    connection.close()
+
+    return jsonify(success=False, message="Не удалось изменить оценку")
+
 def verify_password(input_password, hashed_password):
     return bcrypt.verify(input_password, hashed_password)
 

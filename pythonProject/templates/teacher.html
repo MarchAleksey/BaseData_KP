@@ -90,6 +90,54 @@
             <button type="submit">Выйти из акаунта</button>
         </div>
     </form>
+
+    <div class="info-group">
+    <label>Изменение оценок:</label>
+    <form id="changeMarksForm">
+        <div class="form-group">
+            <label for="studentName">Имя студента:</label>
+            <input type="text" id="studentName" name="student_name" required>
+        </div>
+        <div class="form-group">
+            <label for="studentSurname">Фамилия студента:</label>
+            <input type="text" id="studentSurname" name="student_surname" required>
+        </div>
+        <div class="form-group">
+            <label for="groupName">Группа студента:</label>
+            <input type="text" id="groupName" name="group_name" required>
+        </div>
+        <div class="form-group">
+            <label for="subjectName">Название предмета:</label>
+            <input type="text" id="subjectName" name="subject_name" required>
+        </div>
+        <div class="form-group">
+            <label for="newValue">Новая оценка:</label>
+            <input type="text" id="newValue" name="new_value" required>
+        </div>
+        <div class="form-group">
+            <button type="button" onclick="changeMarks()">Изменить оценку</button>
+        </div>
+    </form>
+</div>
+
+    <script>
+        function changeMarks() {
+            var form = document.getElementById("changeMarksForm");
+            var formData = new FormData(form);
+
+            fetch('/teacher/change_marks', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 </div>
 
 </body>
