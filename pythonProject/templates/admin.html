@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет студента</title>
+    <title>Личный кабинет администратора</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,52 +62,24 @@
 <body>
 
 <div class="profile-container">
-    <h2>Личный кабинет студента</h2>
+    <h2>Личный кабинет администратора</h2>
     <div class="profile-info">
         <div class="info-group">
             <label>Имя:</label>
-            <span>{{ user_data.name }}</span>
+            <span>Иван</span>
         </div>
         <div class="info-group">
             <label>Фамилия:</label>
-            <span>{{ user_data.surname }}</span>
+            <span>Иванов</span>
         </div>
         <div class="info-group">
             <label>Пол:</label>
-            <span>{{ user_data.sex }}</span>
-        </div>
-        <div class="info-group">
-            <label>Группа:</label>
-            <span>Группа 123</span>
-        </div>
-        <div class="info-group">
-            <label>Факультет:</label>
-            <span>Факультет информационных технологий</span>
-        </div>
-        <div class="info-group">
-            <label>Оценки:</label>
-            <table border="1">
-                <tr>
-                    <th>Предмет</th>
-                    <th>Оценка</th>
-                    <th>Дата</th>
-                </tr>
-                <!-- Здесь будет цикл для вывода оценок из базы данных -->
-                {% for mark in student_marks %}
-                <tr>
-                    <td>{{ mark.subject_name }}</td>
-                    <td>{{ mark.value }}</td>
-                    <td>{{ mark.date }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+            <span>М</span>
         </div>
     </div>
-    <form class="login-form" action="{{ url_for('logout') }}" method="get">
-        <div class="form-group">
-            <button type="submit">Выйти из акаунта</button>
-        </div>
-    </form>
+    <div class="logout-link">
+        <p><a href="выход.php">Выйти из аккаунта</a></p>
+    </div>
 </div>
 
 </body>
