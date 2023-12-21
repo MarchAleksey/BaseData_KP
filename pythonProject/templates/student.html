@@ -78,21 +78,20 @@
         </div>
         <div class="info-group">
             <label>Группа:</label>
-            <span>Группа 123</span>
+            <span>{{ student_group_info.group_name }}</span>
         </div>
         <div class="info-group">
-            <label>Факультет:</label>
-            <span>Факультет информационных технологий</span>
+            <label>Курс:</label>
+            <span>{{ student_group_info.course_number }}</span>
         </div>
         <div class="info-group">
             <label>Оценки:</label>
-            <table border="1">
+             <table border="1">
                 <tr>
                     <th>Предмет</th>
                     <th>Оценка</th>
-                    <th>Дата</th>
-                </tr>
-                <!-- Здесь будет цикл для вывода оценок из базы данных -->
+                     <th>Дата</th>
+                 </tr>
                 {% for mark in student_marks %}
                 <tr>
                     <td>{{ mark.subject_name }}</td>
@@ -100,8 +99,9 @@
                     <td>{{ mark.date }}</td>
                 </tr>
                 {% endfor %}
-            </table>
+             </table>
         </div>
+
     </div>
     <form class="login-form" action="{{ url_for('logout') }}" method="get">
         <div class="form-group">

@@ -68,7 +68,6 @@ def process_registration_form():
             connection.close()
     return redirect(url_for('show_registration_form'))
 
-
 def get_user_data(login):
     connection = connect_to_db()
     if connection:
@@ -127,6 +126,103 @@ def get_user_role(login):
             connection.close()
     return 'Неизвестно'
 
+def get_student_group_info(login):
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                sql_query = """
+                    SELECT
+                        person.login AS student_login,
+                        "group"."name" AS group_name,
+                        "group".course_number AS course_number
+                    FROM
+                        person
+                    JOIN
+                        student ON person.id_person = student.id_person
+                    JOIN
+                        "group" ON student.id_group = "group".id_group
+                    WHERE
+                        person.login = %s;
+                """
+                cursor.execute(sql_query, (login,))
+                student_group_info = cursor.fetchone()
+
+                if student_group_info:
+                    return {
+                        'student_login': student_group_info[0],
+                        'group_name': student_group_info[1],
+                        'course_number': student_group_info[2],
+                    }
+        except Exception as error:
+            print("Ошибка при получении данных о группе студента", error)
+        finally:
+            connection.close()
+    return None
+
+def get_teacher_department_info(login):
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                sql_query = """
+                    SELECT
+                        department.name AS department_name,
+                        department.adress AS department_adress
+                    FROM
+                        teacher
+                    JOIN
+                        department ON teacher.id_department = department.id_department
+                    JOIN
+                        person ON teacher.id_person = person.id_person
+                    WHERE
+                        person.login = %s;
+                """
+                cursor.execute(sql_query, (login,))
+                teacher_department_info = cursor.fetchone()
+
+                if teacher_department_info:
+                    return {
+                        'department_name': teacher_department_info[0],
+                        'department_adress': teacher_department_info[1],
+                    }
+        except Exception as error:
+            print("Ошибка при получении данных о департаменте преподавателя", error)
+        finally:
+            connection.close()
+    return None
+
+def get_student_marks(login):
+    connection = connect_to_db()
+    if connection:
+        try:
+            with connection.cursor() as cursor:
+                sql_query = """
+                    SELECT
+                        subject.name AS subject_name,
+                        mark.value AS value,
+                        mark.date AS date
+                    FROM
+                        person
+                    JOIN
+                        student ON person.id_person = student.id_person
+                    JOIN
+                        mark ON student.id_student = mark.id_student
+                    JOIN
+                        subject ON mark.id_subject = subject.id_subject
+                    WHERE
+                        person.login = %s;
+                """
+                cursor.execute(sql_query, (login,))
+                student_marks = cursor.fetchall()
+
+                if student_marks:
+                    return [{'subject_name': mark[0], 'value': mark[1], 'date': mark[2]} for mark in student_marks]
+        except Exception as error:
+            print("Ошибка при получении оценок студента", error)
+        finally:
+            connection.close()
+    return []
 def verify_password(input_password, hashed_password):
     return bcrypt.verify(input_password, hashed_password)
 
@@ -162,8 +258,9 @@ def show_teacher_form():
     if 'user_data' in session:
         # Получаем данные пользователя из сессии
         user_data = session['user_data']
+        teacher_department_info = get_teacher_department_info(user_data['login'])
         # Передаем данные в шаблон
-        return render_template("teacher.html", user_data=user_data)
+        return render_template("teacher.html", user_data=user_data, teacher_department_info=teacher_department_info)
     else:
         # Если нет данных в сессии, перенаправляем на страницу входа
         return redirect(url_for('show_index_form'))
@@ -175,8 +272,10 @@ def show_student_form():
     if 'user_data' in session:
         # Получаем данные пользователя из сессии
         user_data = session['user_data']
+        student_group_info = get_student_group_info(user_data['login'])
+        student_marks = get_student_marks(user_data['login'])
         # Передаем данные в шаблон
-        return render_template("student.html", user_data=user_data)
+        return render_template("student.html", user_data=user_data, student_group_info=student_group_info, student_marks=student_marks)
     else:
         # Если нет данных в сессии, перенаправляем на страницу входа
         return redirect(url_for('show_index_form'))

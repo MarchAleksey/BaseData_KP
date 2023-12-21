@@ -77,8 +77,12 @@
             <span>{{ user_data.sex }}</span>
         </div>
         <div class="info-group">
-            <label>Факультет:</label>
-            <span>Факультет информационных технологий</span>
+            <label>Департамент:</label>
+            <span>{{ teacher_department_info.department_name }}</span>
+        </div>
+        <div class="info-group">
+            <label>Адресс департамента:</label>
+            <span>{{ teacher_department_info.department_adress }}</span>
         </div>
     </div>
     <form class="login-form" action="{{ url_for('logout') }}" method="get">
