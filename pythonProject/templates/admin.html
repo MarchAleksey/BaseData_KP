@@ -4,6 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет администратора</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        function changeStudentGroup() {
+            var studentLogin = $('#student_login').val();
+            var newGroup = $('#new_group').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/admin/change_student_group',
+                data: {
+                    student_login: studentLogin,
+                    new_group: newGroup
+                },
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+
+        function changeTeacherDepartment() {
+            var teacherLogin = $('#teacher_login').val();
+            var newDepartment = $('#new_department').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '/admin/change_teacher_department',
+                data: {
+                    teacher_login: teacherLogin,
+                    new_department: newDepartment
+                },
+                success: function(response) {
+                    alert(response.message);
+                },
+                error: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,6 +89,31 @@
             font-weight: bold;
         }
 
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
         .logout-link {
             text-align: center;
             margin-top: 10px;
@@ -63,23 +130,33 @@
 
 <div class="profile-container">
     <h2>Личный кабинет администратора</h2>
-    <div class="profile-info">
-        <div class="info-group">
-            <label>Имя:</label>
-            <span>Иван</span>
-        </div>
-        <div class="info-group">
-            <label>Фамилия:</label>
-            <span>Иванов</span>
-        </div>
-        <div class="info-group">
-            <label>Пол:</label>
-            <span>М</span>
-        </div>
+    <div class="form-group">
+        <label for="student_login">Логин студента:</label>
+        <input type="text" id="student_login" placeholder="Логин студента">
     </div>
-    <div class="logout-link">
-        <p><a href="выход.php">Выйти из аккаунта</a></p>
+    <div class="form-group">
+        <label for="new_group">Новая группа:</label>
+        <input type="text" id="new_group" placeholder="Новая группа">
     </div>
+    <div class="form-group">
+        <button onclick="changeStudentGroup()">Изменить группу студента</button>
+    </div>
+    <div class="form-group">
+        <label for="teacher_login">Логин преподавателя:</label>
+        <input type="text" id="teacher_login" placeholder="Логин преподавателя">
+    </div>
+    <div class="form-group">
+        <label for="new_department">Новый департамент:</label>
+        <input type="text" id="new_department" placeholder="Новый департамент">
+    </div>
+    <div class="form-group">
+        <button onclick="changeTeacherDepartment()">Изменить департамент преподавателя</button>
+    </div>
+    <form class="login-form" action="{{ url_for('show_index_form') }}" method="get">
+        <div class="form-group">
+            <button type="submit">Выйти из акаунта</button>
+        </div>
+    </form>
 </div>
 
 </body>
