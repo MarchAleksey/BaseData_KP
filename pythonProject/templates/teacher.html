@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Личный кабинет преподавателя</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
@@ -21,49 +22,111 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 300px;
-        }
-
-        .profile-container h2 {
+            width: 80%;
             text-align: center;
-            color: #333;
         }
 
-        .profile-info {
+        .grades-table {
             margin-top: 20px;
         }
 
-        .info-group {
-            margin-bottom: 15px;
+        .grades-table h3 {
+            color: #3498db;
+            margin-bottom: 20px;
         }
 
-        .info-group label {
-            display: block;
-            margin-bottom: 5px;
+        .grades-table label {
             color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
         }
 
-        .info-group span {
-            font-weight: bold;
+        .grades-table select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .grades-table button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .grades-table button:hover {
+            background-color: #2980b9;
+        }
+
+        .grades-table table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .grades-table th,
+        .grades-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .grades-table th {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .grades-table input {
+            width: 80px;
+        }
+
+        .grades-table .save-button {
+            background-color: #2ecc71;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: auto;
+            margin-top: 10px;
+        }
+
+        .grades-table .save-button:hover {
+            background-color: #27ae60;
         }
 
         .logout-link {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
-        .logout-link a {
-            color: #e74c3c;
-            text-decoration: none;
-            font-weight: bold;
+        .logout-link button {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .logout-link button:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
+
 <body>
 
-<div class="profile-container">
-    <h2>Личный кабинет преподавателя</h2>
-    <div class="profile-info">
+    <div class="profile-container">
+        <h2>Личный кабинет преподавателя</h2>
         <div class="info-group">
             <label>Имя:</label>
             <span>{{ user_data.name }}</span>
@@ -77,16 +140,120 @@
             <span>{{ user_data.sex }}</span>
         </div>
         <div class="info-group">
-            <label>Факультет:</label>
-            <span>Факультет информационных технологий</span>
+            <label>Департамент:</label>
+            <span>{{ teacher_department_info.department_name }}</span>
         </div>
+        <div class="info-group">
+            <label>Адрес департамента:</label>
+            <span>{{ teacher_department_info.department_adress }}</span>
+        </div>
+
+        <div class="grades-table">
+            <h3>Таблица оценок студентов</h3>
+            <form id="changeMarksForm">
+                <label for="groupSelect">Выберите группу:</label>
+                <select id="groupSelect" name="selected_group">
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" onclick="getStudentsAndGrades()">Показать оценки</button>
+            </form>
+            <table border="1" id="gradesTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Имя студента</th>
+                        <th>Фамилия студента</th>
+                        <th>Предмет</th>
+                        <th>Текущая оценка</th>
+                        <th>Новая оценка</th>
+                    </tr>
+                </thead>
+                <tbody id="gradesTableBody">
+                    <!-- Здесь будут отображаться оценки студентов -->
+                </tbody>
+            </table>
+            <button type="button" class="save-button" onclick="saveStudentGrades()">Сохранить изменения</button>
+        </div>
+
+        <div class="logout-link">
+            <form class="login-form" action="{{ url_for('logout') }}" method="get">
+                <div class="form-group">
+                    <button type="submit">Выйти из аккаунта</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function getStudentsAndGrades() {
+                var form = document.getElementById("changeMarksForm");
+                var formData = new FormData(form);
+
+                fetch('/teacher/get_students_and_grades', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Отобразите таблицу с оценками студентов
+                            displayGradesTable(data.students);
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+
+            function displayGradesTable(students) {
+                var tableBody = document.getElementById("gradesTableBody");
+                tableBody.innerHTML = "";
+
+                students.forEach(function (student) {
+                    var row = tableBody.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    var cell5 = row.insertCell(4);
+
+                    cell1.innerHTML = student.name;
+                    cell2.innerHTML = student.surname;
+                    cell3.innerHTML = student.subject_name;
+                    cell4.innerHTML = student.current_grade;
+
+                    var input = document.createElement("input");
+                    input.type = "text";
+                    input.name = "new_grades[" + student.student_id + "]";
+                    input.value = student.current_grade;
+                    cell5.appendChild(input);
+                });
+
+                var gradesTable = document.getElementById("gradesTable");
+                gradesTable.style.display = "table";
+            }
+
+            function saveStudentGrades() {
+                var form = document.getElementById("changeMarksForm");
+                var formData = new FormData(form);
+
+                fetch('/teacher/save_student_grades', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        </script>
     </div>
-    <form class="login-form" action="{{ url_for('logout') }}" method="get">
-        <div class="form-group">
-            <button type="submit">Выйти из акаунта</button>
-        </div>
-    </form>
-</div>
 
 </body>
+
 </html>
