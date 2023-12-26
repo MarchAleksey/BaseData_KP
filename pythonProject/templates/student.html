@@ -6,7 +6,7 @@
     <title>Личный кабинет студента</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
@@ -21,12 +21,13 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            width: 300px;
+            width: 400px;
+            text-align: center;
         }
 
         .profile-container h2 {
-            text-align: center;
-            color: #333;
+            color: #3498db;
+            margin-bottom: 20px;
         }
 
         .profile-info {
@@ -35,27 +36,57 @@
 
         .info-group {
             margin-bottom: 15px;
+            text-align: centre;
         }
 
         .info-group label {
             display: block;
             margin-bottom: 5px;
             color: #555;
+            font-weight: bold;
         }
 
         .info-group span {
+            display: block;
             font-weight: bold;
+            color: #333;
+        }
+
+        .info-group table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .info-group table th, .info-group table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .info-group table th {
+            background-color: #3498db;
+            color: #fff;
         }
 
         .logout-link {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
-        .logout-link a {
-            color: #e74c3c;
-            text-decoration: none;
-            font-weight: bold;
+        .logout-link button {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .logout-link button:hover {
+            background-color: #c0392b;
         }
     </style>
 </head>
@@ -78,21 +109,20 @@
         </div>
         <div class="info-group">
             <label>Группа:</label>
-            <span>Группа 123</span>
+            <span>{{ student_group_info.group_name }}</span>
         </div>
         <div class="info-group">
-            <label>Факультет:</label>
-            <span>Факультет информационных технологий</span>
+            <label>Курс:</label>
+            <span>{{ student_group_info.course_number }}</span>
         </div>
         <div class="info-group">
             <label>Оценки:</label>
-            <table border="1">
+            <table>
                 <tr>
                     <th>Предмет</th>
                     <th>Оценка</th>
                     <th>Дата</th>
                 </tr>
-                <!-- Здесь будет цикл для вывода оценок из базы данных -->
                 {% for mark in student_marks %}
                 <tr>
                     <td>{{ mark.subject_name }}</td>
@@ -103,11 +133,13 @@
             </table>
         </div>
     </div>
-    <form class="login-form" action="{{ url_for('logout') }}" method="get">
-        <div class="form-group">
-            <button type="submit">Выйти из акаунта</button>
-        </div>
-    </form>
+    <div class="logout-link">
+        <form class="login-form" action="{{ url_for('logout') }}" method="get">
+            <div class="form-group">
+                <button type="submit">Выйти из аккаунта</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 </body>
