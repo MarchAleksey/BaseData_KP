@@ -305,22 +305,6 @@ def get_students_and_grades_for_teacher():
     return jsonify(success=False, message="Не удалось получить данные студентов и оценок")
 
 
-@app.route('/teacher/get_students_and_grades', methods=['POST'])
-def get_students_and_grades():
-    if 'user_data' in session:
-        user_data = session['user_data']
-        login = user_data['login']
-
-        selected_group_id = request.form.get('selected_group')
-
-        # Получите данные о студентах и их оценках для выбранной группы и предмета
-        students_and_grades = get_students_and_grades_for_teacher(login, selected_group_id)
-
-        return jsonify(success=True, students=students_and_grades)
-
-    return jsonify(success=False, message="Не удалось получить данные о студентах и оценках")
-
-# Маршрут для сохранения измененных оценок студентов
 @app.route('/teacher/save_student_grades', methods=['POST'])
 def save_student_grades():
     if 'user_data' in session:
@@ -328,7 +312,11 @@ def save_student_grades():
         login = user_data['login']
 
         # Получите новые оценки из формы
-        new_grades = request.form.getlist('new_grades')
+        new_grades = []
+        for key, value in request.form.items():
+            if key.startswith('new_grades[') and key.endswith(']'):
+                student_id = int(key.split('[')[1].split(']')[0])
+                new_grades.append((student_id, int(value)))
 
         # Сохраните новые оценки в базе данных
         success = save_student_grades_to_db(login, new_grades)
@@ -338,16 +326,20 @@ def save_student_grades():
         else:
             return jsonify(success=False, message="Не удалось изменить оценки")
 
+
 def save_student_grades_to_db(teacher_login, new_grades):
     connection = connect_to_db()
-
+    print(new_grades)
     if connection:
         try:
             with connection.cursor() as cursor:
-                for student_id, new_grade in new_grades.items():
+                for new_grade in new_grades:
+                    student_id = new_grade[0]
+                    new_grade_value = new_grade[1]
+                    print('Студент и оценка:', student_id, new_grade_value)
                     # Обновление оценок в базе данных
                     sql_query = "UPDATE mark SET value = %s WHERE id_student = %s AND id_subject IN (SELECT id_subject FROM subject WHERE id_teacher = (SELECT id_teacher FROM teacher WHERE id_person = (SELECT id_person FROM person WHERE login = %s)));"
-                    cursor.execute(sql_query, (new_grade, student_id, teacher_login))
+                    cursor.execute(sql_query, (new_grade_value, student_id, teacher_login))
 
                 connection.commit()
                 return True
