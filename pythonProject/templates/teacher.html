@@ -153,27 +153,29 @@
             <form id="changeMarksForm">
                 <label for="groupSelect">Выберите группу:</label>
                 <select id="groupSelect" name="selected_group">
-                    {% for group in groups %}
-                        <option value="{{ group.id }}">{{ group.name }}</option>
+                    {% for group in teacher_groups %}
+                        <option value="{{ group.id }}">{{ group.name}}</option>
                     {% endfor %}
                 </select>
                 <button type="button" onclick="getStudentsAndGrades()">Показать оценки</button>
             </form>
-            <table border="1" id="gradesTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th>Имя студента</th>
-                        <th>Фамилия студента</th>
-                        <th>Предмет</th>
-                        <th>Текущая оценка</th>
-                        <th>Новая оценка</th>
-                    </tr>
-                </thead>
-                <tbody id="gradesTableBody">
-                    <!-- Здесь будут отображаться оценки студентов -->
-                </tbody>
-            </table>
-            <button type="button" class="save-button" onclick="saveStudentGrades()">Сохранить изменения</button>
+            <form id = "TableChange">
+                <table border="1" id="gradesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Имя студента</th>
+                            <th>Фамилия студента</th>
+                            <th>Предмет</th>
+                            <th>Текущая оценка</th>
+                            <th>Новая оценка</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gradesTableBody">
+                        <!-- Здесь будут отображаться оценки студентов -->
+                    </tbody>
+                </table>
+                <button type="button" class="save-button" onclick="saveStudentGrades()">Сохранить изменения</button>
+            </form>
         </div>
 
         <div class="logout-link">
@@ -188,7 +190,7 @@
             function getStudentsAndGrades() {
                 var form = document.getElementById("changeMarksForm");
                 var formData = new FormData(form);
-
+                console.log(formData)
                 fetch('/teacher/get_students_and_grades', {
                     method: 'POST',
                     body: formData
@@ -198,9 +200,11 @@
                         if (data.success) {
                             // Отобразите таблицу с оценками студентов
                             displayGradesTable(data.students);
+                            console.log(data);
                         } else {
                             alert(data.message);
                         }
+
                     })
                     .catch(error => {
                         console.error('Error:', error);
@@ -225,8 +229,9 @@
                     cell4.innerHTML = student.current_grade;
 
                     var input = document.createElement("input");
+
                     input.type = "text";
-                    input.name = "new_grades[" + student.student_id + "]";
+                    input.name = "new_grades[" + student.student_id + "]"; // Уникальное имя для каждого студента
                     input.value = student.current_grade;
                     cell5.appendChild(input);
                 });
@@ -236,21 +241,22 @@
             }
 
             function saveStudentGrades() {
-                var form = document.getElementById("changeMarksForm");
+                var form = document.getElementById("TableChange");
                 var formData = new FormData(form);
 
                 fetch('/teacher/save_student_grades', {
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             }
+
         </script>
     </div>
 
