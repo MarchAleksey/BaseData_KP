@@ -231,12 +231,13 @@ def get_teacher_groups(login):
         try:
             with connection.cursor() as cursor:
                 sql_query = """
-                    Select DISTINCT "group".id_group, "group"."name"
-                    From "group"
-                    Join subject on subject.id_subject = "group".id_subject
-                    Join teacher on teacher.id_teacher = subject.id_teacher
-                    Join person on teacher.id_person = person.id_person
-                    Where person.login = %s;
+                SELECT g.id_group, g.name
+                FROM "group" g
+                JOIN subject_group sg ON g.id_group = sg.id_group
+                JOIN subject s ON sg.id_subject = s.id_subject
+                JOIN teacher t ON s.id_teacher = t.id_teacher
+                JOIN person p ON t.id_person = p.id_person
+                WHERE p.login = %s;
                 """
                 cursor.execute(sql_query, (login,))
                 teacher_groups = cursor.fetchall()
